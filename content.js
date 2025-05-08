@@ -39,42 +39,6 @@ const DECORATIONS = [
     { label: 'blocking', desc: 'Must be addressed before merge.', color: '#374151' },            // Dark Gray/Charcoal - Serious, indicates high importance/blocker
     { label: 'if-minor', desc: 'Address if the effort is small.', color: '#14B8A6' }             // Teal - Represents conditionality, distinct suggestion tone
 ];
-
-// --- Selector for formatted Conventional Comments ---
-
-const PLAIN_CC_REGEX = /^\s*(?:(praise|nitpick|suggestion|issue|question|thought|chore)\s*(?:\((non-blocking|blocking|if-minor)\))?:)\s*/;
-const BADGE_CC_REGEX = /^\s*\[\!\[(?:(praise|nitpick|suggestion|issue|question|thought|chore)(?:\((non-blocking|blocking|if-minor)\))?)\]\(https?:\/\/img\.shields\.io\/badge\/.*?\)\]\(https?:\/\/pullpo\.io\/cc\?.*?\)\s*/;
-
-// --- Global Couters ---
-
-let toolbarCounter = 0; // Ensure unique IDs if multiple textareas load simultaneously
-let settingsCounter = 0; // Unique IDs for settings elements
-
-// --- Badge Helpers ---
-
-// Helper function for badge colors using hex values
-function getBadgeColor(type) {
-    // Find the label object
-    const label = LABELS.find(l => l.label === type);
-    // Return the color if found, otherwise default to gray
-    return label ? label.color.substring(1) : '6B7280'; // Remove # from hex color for shields.io
-}
-
-// Helper function to create badge markdown
-function createBadgeMarkdown(type, decoration) {
-    // Get the label color (without #)
-    const labelColor = getBadgeColor(type);
-    let label = type;
-    let message = decoration || ''; // Use decoration as message if present
-    let decorationColor = '';
-    
-    // Get decoration color if a decoration is specified
-    if (decoration) {
-        const decorObj = DECORATIONS.find(d => d.label === decoration);
-        if (decorObj) {
-            decorationColor = decorObj.color.substring(1); // Remove # from hex color
-        }
-    }
     
     let badgeUrl;
 
