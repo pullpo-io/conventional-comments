@@ -24,13 +24,13 @@ const GITHUB_CONFIG_NEW = {
   ...GITHUB_CONFIG,
   targetTextareaSelectors: [
     // First inline editor (new thread) — appears before any comment exists
-    'div[data-marker-navigation-new-thread="true"] textarea[aria-label="Markdown value"]:not([data-cc-init])',
+    'div[data-marker-navigation-new-thread="true"] textarea[aria-label="Markdown value"]',
 
     // Any inline thread editor (subsequent comments / replies)
-    'div[data-marker-id] textarea[aria-label="Markdown value"]:not([data-cc-init])',
+    'div[data-marker-id] textarea[aria-label="Markdown value"]',
 
     // Fallback inside the markdown editor fieldset (covers odd cases and PR header comment box)
-    'fieldset textarea[aria-label="Markdown value"]:not([data-cc-init])',
+    'fieldset textarea[aria-label="Markdown value"]',
   ],
   targetThreadSelectors: [
     "div.js-inline-comments-container",

@@ -84,20 +84,28 @@ function main() {
     isProcessing = true;
 
     setTimeout(() => {
-      Platform.recheck();
+      try {
+        Platform.recheck();
 
-      for (const mutation of mutationsList) {
-        if (mutation.type === "childList") {
-          for (const node of mutation.addedNodes) {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              checkAndInitializeAddedTextareas(node);
-              if (Platform.settings.get("slack", true))
-                checkAndInitializeAddedThreads(node);
+        for (const mutation of mutationsList) {
+          if (mutation.type === "childList") {
+            for (const node of mutation.addedNodes) {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                checkAndInitializeAddedTextareas(node);
+                if (Platform.settings.get("slack", true))
+                  checkAndInitializeAddedThreads(node);
+              }
             }
           }
         }
+      } catch (error) {
+        console.error(
+          "[Conventional Comments] Error processing DOM mutations:",
+          error
+        );
+      } finally {
+        isProcessing = false;
       }
-      isProcessing = false;
     }, 100);
   });
 

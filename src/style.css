@@ -1,171 +1,176 @@
 /* --- Base Styles --- (Keep previous styles) */
 .cc-toolbar {
-    padding: 6px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    border-bottom: 1px solid var(--borderColor-default, #d0d7de); /* Use default border color for theme adaptation */
-    align-items: center; /* Vertically align items */
+  padding: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  border-bottom: 1px solid var(--borderColor-default, #d0d7de); /* Use default border color for theme adaptation */
+  align-items: center; /* Vertically align items */
 }
-  
+
 .cc-button {
-    background-color: var(--color-btn-bg, #f6f8fa);
-    border: 1px solid var(--color-btn-border, rgba(27, 31, 36, 0.15));
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 12px;
-    line-height: 20px;
-    color: var(--color-btn-text, #24292f);
-    cursor: pointer;
-    transition: background-color 0.1s ease-out, border-color 0.1s ease-out;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-    white-space: nowrap;
+  background-color: var(--color-btn-bg, #f6f8fa);
+  border: 1px solid var(--color-btn-border, rgba(27, 31, 36, 0.15));
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--color-btn-text, #24292f);
+  cursor: pointer;
+  transition: background-color 0.1s ease-out, border-color 0.1s ease-out;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  white-space: nowrap;
 }
-  
+
 /* --- New Styles for States --- */
 
 /* Style for the non-button selected type label */
 .cc-selected-type-label {
-    font-weight: 600; /* Make it bold */
-    padding: 3px 10px; /* Match button padding */
-    font-size: 12px;
-    line-height: 20px;
-    color: var(--color-fg-default, #24292f); /* Use default text color */
-    background-color: var(--color-canvas-subtle, #f6f8fa); /* Subtle background */
-    border: 1px solid var(--color-border-subtle, rgba(27, 31, 36, 0.1));
-    border-radius: 6px;
-    cursor: pointer; /* Indicate it's clickable to change type */
-    margin-right: 2px; /* Spacing before separator */
+  font-weight: 600; /* Make it bold */
+  padding: 3px 10px; /* Match button padding */
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--color-fg-default, #24292f); /* Use default text color */
+  background-color: var(--color-canvas-subtle, #f6f8fa); /* Subtle background */
+  border: 1px solid var(--color-border-subtle, rgba(27, 31, 36, 0.1));
+  border-radius: 6px;
+  cursor: pointer; /* Indicate it's clickable to change type */
+  margin-right: 2px; /* Spacing before separator */
 }
 
 .cc-separator {
-    font-size: 12px;
-    line-height: 20px;
-    color: var(--color-fg-muted, #57606a); /* Muted color for separator */
-    margin-left: 2px;
-    margin-right: 2px;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--color-fg-muted, #57606a); /* Muted color for separator */
+  margin-left: 2px;
+  margin-right: 2px;
 }
 
 /* Highlight for the selected type when in 'changeType' state */
 .cc-type-selected-highlight {
-    border-color: var(--color-accent-fg, #0969da); /* Accent color border */
-    /* Optional: Slightly different background */
-    background-color: var(--color-accent-subtle, #ddf4ff);
+  border-color: var(--color-accent-fg, #0969da); /* Accent color border */
+  /* Optional: Slightly different background */
+  background-color: var(--color-accent-subtle, #ddf4ff);
 }
 
 /* Highlight for the selected decoration */
 .cc-decoration-selected-highlight {
-    border-color: var(--color-accent-fg, #0969da);
-    /* Keep background same as other buttons or make subtle change */
-    background-color: var(--color-accent-subtle, #ddf4ff);
+  border-color: var(--color-accent-fg, #0969da);
+  /* Keep background same as other buttons or make subtle change */
+  background-color: var(--color-accent-subtle, #ddf4ff);
 }
 
 /* --- Dark Mode Styles --- (Keep previous dark mode styles for .cc-button) */
 
-/* Explicit dark mode styles for the base button */
-html[data-color-mode="dark"] .cc-button {
-    background-color: var(--color-btn-bg, #21262d); /* Darker button background */
-    border-color: var(--color-btn-border, rgba(240, 246, 252, 0.1)); /* Lighter border for contrast */
+/* Dark mode styles for the base button */
+@media (prefers-color-scheme: dark) {
+  .cc-button {
+    background-color: var(
+      --color-btn-bg,
+      #21262d
+    ); /* Darker button background */
+    border-color: var(
+      --color-btn-border,
+      rgba(240, 246, 252, 0.1)
+    ); /* Lighter border for contrast */
     color: var(--color-btn-text, #c9d1d9); /* Lighter text */
-}
+  }
 
-/* Dark mode hover/active styles might also need adjustment if default isn't good */
-/* Example (Uncomment and adjust if needed):
-html[data-color-mode="dark"] .cc-button:hover {
-  background-color: var(--color-btn-hover-bg, #30363d);
-  border-color: var(--color-btn-hover-border, rgba(240, 246, 252, 0.15));
-}
-html[data-color-mode="dark"] .cc-button:active {
-    background-color: var(--color-btn-active-bg, #21262d); // Adjust as needed
-    border-color: var(--color-btn-active-border, rgba(240, 246, 252, 0.1)); // Adjust as needed
-}
-*/
-
-/* Add dark mode styles for new elements */
-html[data-color-mode="dark"] .cc-selected-type-label {
+  .cc-selected-type-label {
     color: var(--color-fg-default, #c9d1d9);
     background-color: var(--color-canvas-subtle, #161b22);
     border-color: var(--color-border-subtle, rgba(240, 246, 252, 0.08));
-}
+  }
 
-html[data-color-mode="dark"] .cc-separator {
+  .cc-separator {
     color: var(--color-fg-muted, #8b949e);
-}
+  }
 
-html[data-color-mode="dark"] .cc-type-selected-highlight {
+  .cc-type-selected-highlight {
     border-color: var(--color-accent-fg, #58a6ff);
     background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
-}
+  }
 
-html[data-color-mode="dark"] .cc-decoration-selected-highlight {
+  .cc-decoration-selected-highlight {
     border-color: var(--color-accent-fg, #58a6ff);
     background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
+  }
 }
 
 /* Add high contrast dark mode overrides if needed */
-html[data-color-mode="dark"][data-dark-theme="dark_high_contrast"] .cc-selected-type-label {
+@media (prefers-color-scheme: dark) {
+  html[data-dark-theme="dark_high_contrast"] .cc-selected-type-label {
     color: var(--color-fg-default, #f0f6fc);
     background-color: var(--color-canvas-subtle, #010409);
     border-color: var(--color-border-default, #f0f6fc);
+  }
 }
 
 /* --- Settings Button & Dropdown Styles --- */
 
 /* Container for the settings button (mimics GitHub's ActionBar item) */
 .cc-toolbar-settings-item {
-    margin-left: auto; /* Pushes this item to the far right */
-    margin-top: auto;
-    margin-bottom: auto;
-    display: flex; /* Ensure button inside is aligned if needed */
-    align-items: center;
-    justify-content: center;
-  }
+  margin-left: auto; /* Pushes this item to the far right */
+  margin-top: auto;
+  margin-bottom: auto;
+  display: flex; /* Ensure button inside is aligned if needed */
+  align-items: center;
+  justify-content: center;
+}
 
 .cc-settings-button {
-    /* Align with GitHub's toolbar button styles */
-    background: none;
-    border: none;
-    padding: 6px;
-    cursor: pointer;
-    border-radius: 6px;
-    line-height: 0; /* Prevent extra space */
-    color: var(--color-fg-muted, #57606a);
-    transition: background-color 0.1s ease-out, color 0.1s ease-out;
+  /* Align with GitHub's toolbar button styles */
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 6px;
+  line-height: 0; /* Prevent extra space */
+  color: var(--color-fg-muted, #57606a);
+  transition: background-color 0.1s ease-out, color 0.1s ease-out;
 }
 
 .cc-settings-button svg {
-    display: block; /* Prevent inline spacing issues */
-    fill: transparent;
-    stroke: currentColor;
+  display: block; /* Prevent inline spacing issues */
+  fill: transparent;
+  stroke: currentColor;
 }
 
 .cc-settings-button:hover {
-    background-color: var(--color-action-list-item-default-hover-bg, rgba(175, 184, 193, 0.2)); /* Subtle hover */
-    color: var(--color-fg-default, #24292f);
+  background-color: var(
+    --color-action-list-item-default-hover-bg,
+    rgba(175, 184, 193, 0.2)
+  ); /* Subtle hover */
+  color: var(--color-fg-default, #24292f);
 }
 
 /* --- Active State for Settings Button --- */
 .cc-settings-button.cc-settings-button-active {
-    /* Use accent color for active state */
-    background-color: var(--color-accent-subtle, #ddf4ff);
-    color: var(--color-accent-fg, #0969da);
+  /* Use accent color for active state */
+  background-color: var(--color-accent-subtle, #ddf4ff);
+  color: var(--color-accent-fg, #0969da);
 }
-
 
 /* --- Dark Mode Settings Styles --- */
 
-html[data-color-mode="dark"] .cc-settings-button {
+@media (prefers-color-scheme: dark) {
+  .cc-settings-button {
     color: var(--color-fg-muted, #8b949e);
-}
+  }
 
-html[data-color-mode="dark"] .cc-settings-button:hover {
-    background-color: var(--color-action-list-item-default-hover-bg, rgba(187, 196, 206, 0.1));
+  .cc-settings-button:hover {
+    background-color: var(
+      --color-action-list-item-default-hover-bg,
+      rgba(187, 196, 206, 0.1)
+    );
     color: var(--color-fg-default, #c9d1d9);
-}
+  }
 
-html[data-color-mode="dark"] .cc-settings-button.cc-settings-button-active {
+  .cc-settings-button.cc-settings-button-active {
     background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
     color: var(--color-accent-fg, #58a6ff);
+  }
 }
 
 /* --- Slack button --- */
