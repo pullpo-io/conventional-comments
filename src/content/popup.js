@@ -23,13 +23,9 @@ async function openFallbackModal(path) {
   // Extract query parameters from path
   const [pathWithoutQuery, queryString] = path.split("?");
 
-  const [htmlResponse, cssResponse] = await Promise.all([
-    fetch(chrome.runtime.getURL(pathWithoutQuery)),
-    fetch(chrome.runtime.getURL("popups/style.css")),
-  ]);
-
+  // Fetch the HTML first
+  const htmlResponse = await fetch(chrome.runtime.getURL(pathWithoutQuery));
   let htmlContent = await htmlResponse.text();
-  const cssContent = await cssResponse.text(); // Get the text content of the stylesheet
 
   // Replace all relative paths in src and href attributes with chrome.runtime.getURL
   htmlContent = htmlContent.replace(
@@ -40,10 +36,30 @@ async function openFallbackModal(path) {
     }
   );
 
+  // Parse HTML to extract stylesheets from <head>
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlContent, "text/html");
+
+  // Extract all stylesheet links from <head>
+  const linkTags = doc.head.querySelectorAll('link[rel="stylesheet"]');
+  const stylesheetUrls = Array.from(linkTags).map((link) =>
+    link.getAttribute("href")
+  );
+
+  // Fetch all stylesheets in parallel
+  const cssResponses = await Promise.all(
+    stylesheetUrls.map((url) => fetch(url))
+  );
+
+  // Get all CSS content and concatenate
+  const cssContents = await Promise.all(
+    cssResponses.map((response) => response.text())
+  );
+  const cssContent = cssContents.join("\n\n");
+
   const ccIcon = chrome.runtime.getURL("assets/cc_icon.png");
   const popupBody = doc.body.innerHTML;
+  const bodyClasses = doc.body.className || "";
 
   const modalHost = document.createElement("div");
   modalHost.id = MODAL_ID;
@@ -87,7 +103,7 @@ async function openFallbackModal(path) {
             <div class="modal-content">
                 <img src="${ccIcon}" class="cc-icon" />
                 <button class="close-btn" title="Close">&times;</button>
-                <div id="cc-popup-body" style="width: auto; padding-top: 45px" ${
+                <div id="cc-popup-body" class="${bodyClasses}" style="width: auto; padding-top: 45px" ${
                   queryString ? `data-query-params="${queryString}"` : ""
                 }>
                     ${popupBody}

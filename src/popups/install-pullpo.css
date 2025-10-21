@@ -1,0 +1,217 @@
+/* Install Popup Styles */
+
+.install-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Hero Section */
+.hero-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.hero-section h1 {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+  color: #111827;
+}
+
+.hero-subtitle {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: #4b5563;
+  margin: 0 0 var(--spacing-lg) 0;
+  opacity: 1;
+}
+
+/* Dark theme for hero section */
+@media (prefers-color-scheme: dark) {
+  .hero-section h1 {
+    color: #f9fafb;
+  }
+
+  .hero-subtitle {
+    color: #d1d5db;
+  }
+}
+
+/* Client Logos Section */
+.clients-section {
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+}
+
+.clients-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: var(--spacing-md);
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .clients-title {
+    color: #9ca3af;
+  }
+}
+
+.logo-cloud {
+  width: 100%;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 64px,
+    black calc(100% - 64px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 64px,
+    black calc(100% - 64px),
+    transparent 100%
+  );
+}
+
+.logo-scroll {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  animation: infinite-scroll 45s linear infinite;
+  width: max-content;
+}
+
+.client-logo {
+  height: 18px;
+  width: auto;
+  opacity: 0.7;
+  filter: brightness(0);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .client-logo {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+  }
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary {
+  background-color: #ec4899;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #db2777;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background-color: #f9fafb;
+  transform: translateY(-1px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn-secondary {
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+
+  .btn-secondary:hover {
+    background-color: #1f2937;
+  }
+}
+
+/* Disable Section */
+.disable-section {
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid #e5e7eb;
+  width: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  .disable-section {
+    border-top-color: #334155;
+  }
+}
+
+.disable-text {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: var(--spacing-sm);
+  opacity: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .disable-text {
+    color: #9ca3af;
+  }
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+}
+
+.btn-link:hover {
+  text-decoration: none;
+}
+
+/* Install popup specific styles (center aligned) */
+.disable-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Keyframe animations */
+@keyframes infinite-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

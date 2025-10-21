@@ -1,0 +1,54 @@
+/* Settings Popup Styles */
+
+/* Setting group container */
+.setting-group {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+}
+
+.setting-group:not(:last-child) {
+  border-bottom: 1px solid;
+  border-color: #e5e7eb;
+}
+
+.setting-group:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .setting-group:not(:last-child) {
+    border-color: #334155;
+  }
+}
+
+/* Support section without borders */
+.support-section {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+}
+
+/* Support Links (Settings popup - left aligned) */
+.support-links {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.support-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 0.75rem;
+  padding: var(--spacing-sm);
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.support-link:hover {
+  background-color: rgba(236, 72, 153, 0.1);
+  text-decoration: none;
+}
