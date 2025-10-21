@@ -1,19 +1,5 @@
-let root = document.getElementById("cc-popup-body");
-if (root === null) {
-  root = document
-    .getElementById("cc-modal-container")
-    .shadowRoot.getElementById("cc-popup-body");
-}
-
-// Delayed attachment in case popup is running within fallback modal
-let delayedAttachement = setTimeout(attachListeners, 300);
-
 // Attach listeners to settings checkboxes
-function attachListeners() {
-  if (delayedAttachement) {
-    clearTimeout(delayedAttachement);
-    delayedAttachement = null;
-  }
+function attachListeners(root) {
 
   // Prettify option
   const prettifyToggle = root.querySelector("#prettify");
@@ -44,4 +30,23 @@ function attachListeners() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", attachListeners);
+// Exported initialization function for fallback modal
+export function initialize() {
+  let root = document.getElementById("cc-popup-body");
+  if (root === null) {
+    root = document
+      .getElementById("cc-modal-container")
+      ?.shadowRoot?.getElementById("cc-popup-body");
+  }
+
+  if (root) {
+    attachListeners(root);
+  }
+}
+
+// Auto-initialize for native popup
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initialize);
+} else {
+  initialize();
+}

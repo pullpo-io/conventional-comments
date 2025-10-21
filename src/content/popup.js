@@ -14,15 +14,31 @@ export default Popup = {
 async function openFallbackModal(path) {
   const MODAL_ID = "cc-modal-container";
 
-  if (document.getElementById(MODAL_ID)) return;
+  // Remove existing modal if present to ensure fresh state
+  const existing = document.getElementById(MODAL_ID);
+  if (existing) {
+    existing.remove();
+  }
+
+  // Extract query parameters from path
+  const [pathWithoutQuery, queryString] = path.split("?");
 
   const [htmlResponse, cssResponse] = await Promise.all([
-    fetch(chrome.runtime.getURL(path)),
+    fetch(chrome.runtime.getURL(pathWithoutQuery)),
     fetch(chrome.runtime.getURL("popups/style.css")),
   ]);
 
-  const htmlContent = await htmlResponse.text();
+  let htmlContent = await htmlResponse.text();
   const cssContent = await cssResponse.text(); // Get the text content of the stylesheet
+
+  // Replace all relative paths in src and href attributes with chrome.runtime.getURL
+  htmlContent = htmlContent.replace(
+    /(?:src|href)=["'](?!https?:\/\/|chrome-extension:\/\/|moz-extension:\/\/)([^"']+)["']/g,
+    (match, path) => {
+      const fullPath = chrome.runtime.getURL(path);
+      return match.replace(path, fullPath);
+    }
+  );
 
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlContent, "text/html");
@@ -50,7 +66,7 @@ async function openFallbackModal(path) {
         }
         .modal-content {
             pointer-events: auto;
-            position: relative; background-color: #020617; width: 430px; padding-top: 15px;
+            position: relative; width: 430px; overflow: hidden;
             border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .cc-icon {
@@ -59,7 +75,7 @@ async function openFallbackModal(path) {
         }
         .close-btn {
             position: absolute; top: 8px; right: 8px; border: none;
-            aspect-ratio: 1; padding: 0 5px 2px; border-radius: 4px; 
+            aspect-ratio: 1; padding: 0 5px 2px; border-radius: 4px;
             background: none; font-size: 18px; font-weight: 200;
             cursor: pointer; color: #64748b;
         }
@@ -71,7 +87,9 @@ async function openFallbackModal(path) {
             <div class="modal-content">
                 <img src="${ccIcon}" class="cc-icon" />
                 <button class="close-btn" title="Close">&times;</button>
-                <div id="cc-popup-body" style="width: auto">
+                <div id="cc-popup-body" style="width: auto; padding-top: 45px" ${
+                  queryString ? `data-query-params="${queryString}"` : ""
+                }>
                     ${popupBody}
                 </div>
             </div>
@@ -80,16 +98,20 @@ async function openFallbackModal(path) {
 
   // The fallback modal won't load the scripts automatically, we need to load them within the extention's
   // environment (here) "manually"
-  doc.querySelectorAll("script").forEach(async (scriptTag) => {
+  const scriptTags = doc.querySelectorAll("script");
+  for (const scriptTag of scriptTags) {
     if (!scriptTag.src) {
-      return;
+      continue;
     }
 
-    // Assume scripts are modules inside extension's ./popups directory and contain an initialize function
-    await import(
-      chrome.runtime.getURL("popups/" + scriptTag.getAttribute("src"))
-    );
-  });
+    const scriptSrc = scriptTag.getAttribute("src");
+    const module = await import(scriptSrc);
+
+    // Call the initialize function if the module exports one
+    if (module.initialize && typeof module.initialize === "function") {
+      module.initialize();
+    }
+  }
 
   const closeModal = () => {
     // Remove the global listener to prevent memory leaks

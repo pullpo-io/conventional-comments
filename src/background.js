@@ -20,12 +20,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     case "GET_SLACK_REDIRECT_URL":
       handleGetSlackRedirectUrl(request).then(sendResponse);
       return true;
-    case "OPEN_INSTALL_POPUP":
-      handleOpenInstallPopup(request).then(sendResponse);
-      return true;
-    case "OPEN_EXTERNAL_URL":
-      handleOpenExternalUrl(request).then(sendResponse);
-      return true;
     default:
       sendResponse({ error: "Unrecognized message" });
       return true;
@@ -94,43 +88,6 @@ async function handleGetSlackRedirectUrl(request) {
   try {
     const data = await fetch(apiUrl).then((response) => response.json());
     return { redirect_url: data.redirect_url };
-  } catch (error) {
-    return { error: error.message };
-  }
-}
-
-async function handleOpenInstallPopup(request) {
-  return new Promise((resolve) => {
-    const popupUrl = `popups/install-pullpo.html?org=${encodeURIComponent(
-      request.org
-    )}`;
-
-    chrome.action.setPopup({ popup: popupUrl }, () => {
-      try {
-        chrome.action.openPopup({}, () => {
-          setTimeout(() => {
-            // Reset popup to default behavior after small delay, ensuring new popup has time to render
-            chrome.action.setPopup({ popup: "popups/default.html" });
-          }, 300);
-          resolve({ success: true });
-        });
-      } catch {
-        // Reset popup to default behavior immediately
-        chrome.action.setPopup({ popup: "popups/default.html" });
-        resolve({ error: "API_UNAVAILABLE" });
-      }
-    });
-  });
-}
-
-async function handleOpenExternalUrl(request) {
-  try {
-    await chrome.tabs.create({
-      url: request.url,
-      active: true,
-    });
-
-    return { success: true };
   } catch (error) {
     return { error: error.message };
   }
