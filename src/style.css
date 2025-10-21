@@ -61,52 +61,6 @@
   background-color: var(--color-accent-subtle, #ddf4ff);
 }
 
-/* --- Dark Mode Styles --- (Keep previous dark mode styles for .cc-button) */
-
-/* Dark mode styles for the base button */
-@media (prefers-color-scheme: dark) {
-  .cc-button {
-    background-color: var(
-      --color-btn-bg,
-      #21262d
-    ); /* Darker button background */
-    border-color: var(
-      --color-btn-border,
-      rgba(240, 246, 252, 0.1)
-    ); /* Lighter border for contrast */
-    color: var(--color-btn-text, #c9d1d9); /* Lighter text */
-  }
-
-  .cc-selected-type-label {
-    color: var(--color-fg-default, #c9d1d9);
-    background-color: var(--color-canvas-subtle, #161b22);
-    border-color: var(--color-border-subtle, rgba(240, 246, 252, 0.08));
-  }
-
-  .cc-separator {
-    color: var(--color-fg-muted, #8b949e);
-  }
-
-  .cc-type-selected-highlight {
-    border-color: var(--color-accent-fg, #58a6ff);
-    background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
-  }
-
-  .cc-decoration-selected-highlight {
-    border-color: var(--color-accent-fg, #58a6ff);
-    background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
-  }
-}
-
-/* Add high contrast dark mode overrides if needed */
-@media (prefers-color-scheme: dark) {
-  html[data-dark-theme="dark_high_contrast"] .cc-selected-type-label {
-    color: var(--color-fg-default, #f0f6fc);
-    background-color: var(--color-canvas-subtle, #010409);
-    border-color: var(--color-border-default, #f0f6fc);
-  }
-}
-
 /* --- Settings Button & Dropdown Styles --- */
 
 /* Container for the settings button (mimics GitHub's ActionBar item) */
@@ -152,9 +106,38 @@
   color: var(--color-accent-fg, #0969da);
 }
 
-/* --- Dark Mode Settings Styles --- */
+/* ========================================================================== */
+/* DARK MODE STYLES                                                           */
+/* ========================================================================== */
 
+/* Layer 1: System dark preference (fallback for GitHub "sync with system") */
 @media (prefers-color-scheme: dark) {
+  .cc-button {
+    background-color: var(--color-btn-bg, #21262d);
+    border-color: var(--color-btn-border, rgba(240, 246, 252, 0.1));
+    color: var(--color-btn-text, #c9d1d9);
+  }
+
+  .cc-selected-type-label {
+    color: var(--color-fg-default, #c9d1d9);
+    background-color: var(--color-canvas-subtle, #161b22);
+    border-color: var(--color-border-subtle, rgba(240, 246, 252, 0.08));
+  }
+
+  .cc-separator {
+    color: var(--color-fg-muted, #8b949e);
+  }
+
+  .cc-type-selected-highlight {
+    border-color: var(--color-accent-fg, #58a6ff);
+    background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
+  }
+
+  .cc-decoration-selected-highlight {
+    border-color: var(--color-accent-fg, #58a6ff);
+    background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
+  }
+
   .cc-settings-button {
     color: var(--color-fg-muted, #8b949e);
   }
@@ -173,4 +156,106 @@
   }
 }
 
-/* --- Slack button --- */
+/* Layer 2: Explicit GitHub light theme (override system dark preference) */
+html[data-color-mode="light"] .cc-button {
+  background-color: var(--color-btn-bg, #f6f8fa);
+  border-color: var(--color-btn-border, rgba(27, 31, 36, 0.15));
+  color: var(--color-btn-text, #24292f);
+}
+
+html[data-color-mode="light"] .cc-selected-type-label {
+  color: var(--color-fg-default, #24292f);
+  background-color: var(--color-canvas-subtle, #f6f8fa);
+  border-color: var(--color-border-subtle, rgba(27, 31, 36, 0.1));
+}
+
+html[data-color-mode="light"] .cc-separator {
+  color: var(--color-fg-muted, #57606a);
+}
+
+html[data-color-mode="light"] .cc-type-selected-highlight {
+  border-color: var(--color-accent-fg, #0969da);
+  background-color: var(--color-accent-subtle, #ddf4ff);
+}
+
+html[data-color-mode="light"] .cc-decoration-selected-highlight {
+  border-color: var(--color-accent-fg, #0969da);
+  background-color: var(--color-accent-subtle, #ddf4ff);
+}
+
+html[data-color-mode="light"] .cc-settings-button {
+  color: var(--color-fg-muted, #57606a);
+}
+
+html[data-color-mode="light"] .cc-settings-button:hover {
+  background-color: var(
+    --color-action-list-item-default-hover-bg,
+    rgba(175, 184, 193, 0.2)
+  );
+  color: var(--color-fg-default, #24292f);
+}
+
+html[data-color-mode="light"] .cc-settings-button.cc-settings-button-active {
+  background-color: var(--color-accent-subtle, #ddf4ff);
+  color: var(--color-accent-fg, #0969da);
+}
+
+/* Layer 3: Explicit GitHub dark theme (override system light preference) */
+html[data-color-mode="dark"] .cc-button {
+  background-color: var(--color-btn-bg, #21262d);
+  border-color: var(--color-btn-border, rgba(240, 246, 252, 0.1));
+  color: var(--color-btn-text, #c9d1d9);
+}
+
+html[data-color-mode="dark"] .cc-selected-type-label {
+  color: var(--color-fg-default, #c9d1d9);
+  background-color: var(--color-canvas-subtle, #161b22);
+  border-color: var(--color-border-subtle, rgba(240, 246, 252, 0.08));
+}
+
+html[data-color-mode="dark"] .cc-separator {
+  color: var(--color-fg-muted, #8b949e);
+}
+
+html[data-color-mode="dark"] .cc-type-selected-highlight {
+  border-color: var(--color-accent-fg, #58a6ff);
+  background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
+}
+
+html[data-color-mode="dark"] .cc-decoration-selected-highlight {
+  border-color: var(--color-accent-fg, #58a6ff);
+  background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
+}
+
+html[data-color-mode="dark"] .cc-settings-button {
+  color: var(--color-fg-muted, #8b949e);
+}
+
+html[data-color-mode="dark"] .cc-settings-button:hover {
+  background-color: var(
+    --color-action-list-item-default-hover-bg,
+    rgba(187, 196, 206, 0.1)
+  );
+  color: var(--color-fg-default, #c9d1d9);
+}
+
+html[data-color-mode="dark"] .cc-settings-button.cc-settings-button-active {
+  background-color: var(--color-accent-subtle, rgba(56, 139, 253, 0.15));
+  color: var(--color-accent-fg, #58a6ff);
+}
+
+/* Layer 4: High contrast dark mode variant */
+@media (prefers-color-scheme: dark) {
+  html[data-dark-theme="dark_high_contrast"] .cc-selected-type-label {
+    color: var(--color-fg-default, #f0f6fc);
+    background-color: var(--color-canvas-subtle, #010409);
+    border-color: var(--color-border-default, #f0f6fc);
+  }
+}
+
+html[data-color-mode="dark"][data-dark-theme="dark_high_contrast"]
+  .cc-selected-type-label {
+  color: var(--color-fg-default, #f0f6fc);
+  background-color: var(--color-canvas-subtle, #010409);
+  border-color: var(--color-border-default, #f0f6fc);
+}
