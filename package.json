@@ -1,6 +1,6 @@
 {
   "name": "conventional-comments-helper",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Helps format code review comments on GitHub using the Conventional Comments standard.",
   "scripts": {
     "build:chrome": "node build-manifests.js chrome",

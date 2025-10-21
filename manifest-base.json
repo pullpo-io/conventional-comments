@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Conventional Comments (GitHub) - by Pullpo",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Helps format code review comments on GitHub using the Conventional Comments standard.",
   "action": {
     "default_popup": "popups/default.html",
@@ -30,16 +30,28 @@
         "*://github.com/*",
         "*://gitlab.com/*"
       ],
-      "exclude_matches": [ "*://github.com/login*" ],
-      "js": ["content.js"],
-      "css": ["style.css"],
+      "exclude_matches": [
+        "*://github.com/login*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "style.css"
+      ],
       "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": [ "popups/*", "assets/*" ],
-      "matches": [ "https://github.com/*", "https://gitlab.com/*" ]
+      "resources": [
+        "popups/*",
+        "assets/*"
+      ],
+      "matches": [
+        "https://github.com/*",
+        "https://gitlab.com/*"
+      ]
     }
   ]
-} 
+}
