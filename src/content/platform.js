@@ -1,3 +1,5 @@
+import { RICH_TEXT_SELECTORS } from "./editors.js";
+
 // --- Selector marker constants used across modules ---
 
 export const TOOLBAR_MARKER_CLASS = "cc-toolbar-added";
@@ -40,8 +42,11 @@ const GITHUB_CONFIG_NEW = {
 
 const GITLAB_CONFIG = {
   targetTextareaSelectors: [
+    // Markdown editing mode
     'textarea[name="note[note]"]',
     'textarea[name="work-item-add-or-edit-comment"]',
+    // Rich text editing mode (Tiptap/ProseMirror content editor)
+    ...RICH_TEXT_SELECTORS,
   ],
   targetThreadSelectors: ["div[data-discussion-id]"],
   slackThreadButtonClassName:
