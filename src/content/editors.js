@@ -282,6 +282,7 @@ class RichTextHandle {
           rangeToDelete,
           hasSeparator,
           prettified: true,
+          anchor,
           ...parseBadgeAnchor(anchor),
         };
       }
@@ -302,6 +303,7 @@ class RichTextHandle {
         rangeToDelete: range.cloneRange(),
         hasSeparator: true,
         prettified: false,
+        anchor: null,
         label: match[1],
         decoration: match[2],
       };
@@ -323,16 +325,16 @@ class RichTextHandle {
 
   writePrefix(markdown, prettified) {
     return this.enqueue(async () => {
-      const hadPrefix = await this.selectPrefix();
+      const previous = await this.selectPrefix();
 
       if (prettified) {
         // GitLab replaces the selection itself when handling the paste.
         this.pasteMarkdown(markdown);
-        await this.awaitBadge();
+        await this.awaitBadge(previous?.anchor ?? null);
       } else {
         // Deleting through ProseMirror first keeps atoms (a badge image) from
         // being half-removed by the browser's own text insertion.
-        if (hadPrefix) this.pressBackspace();
+        if (previous) this.pressBackspace();
         // Plain prefixes are literal text: typing them preserves the trailing
         // space that a markdown round-trip would otherwise strip.
         document.execCommand("insertText", false, markdown);
@@ -355,7 +357,7 @@ class RichTextHandle {
   }
 
   // Focuses the editor and selects the existing prefix (collapsing the caret at
-  // the start of the document when there is none). Returns whether one existed.
+  // the start of the document when there is none). Returns the prefix it found.
   async selectPrefix() {
     this.element.focus();
 
@@ -363,7 +365,7 @@ class RichTextHandle {
     this.setSelection(found?.rangeToDelete ?? this.startOfDocument());
     await nextTask();
 
-    return Boolean(found);
+    return found;
   }
 
   startOfDocument() {
@@ -415,17 +417,23 @@ class RichTextHandle {
     );
   }
 
-  // Pasting markdown is resolved asynchronously by GitLab, so wait for the badge
-  // to land before restoring the caret and separating it from the comment body.
-  async awaitBadge() {
+  // Pasting markdown is resolved asynchronously by GitLab: the selection is only
+  // dropped a microtask later, and the badge itself lands after a round trip to
+  // the markdown renderer. Waiting for merely *a* badge would therefore match the
+  // one still on screen and move the caret out of the selection GitLab is about
+  // to delete, leaving the old badge behind — so wait for a different node.
+  async awaitBadge(previousAnchor) {
     const deadline = Date.now() + RICH_TEXT_WRITE_TIMEOUT_MS;
 
+    const isNewBadge = (found) =>
+      found?.prettified && found.anchor !== previousAnchor;
+
     let found = this.findPrefix();
-    while (!found?.prettified && Date.now() < deadline) {
+    while (!isNewBadge(found) && Date.now() < deadline) {
       await nextTask();
       found = this.findPrefix();
     }
-    if (!found?.prettified) return;
+    if (!isNewBadge(found)) return;
 
     const caret = found.range.cloneRange();
     caret.collapse(false);
