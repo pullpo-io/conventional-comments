@@ -8,7 +8,7 @@
 // Both are wrapped behind the same handle interface so the toolbar code does not
 // have to know which one it is talking to:
 //
-//   getMountPoint()                    element the toolbar is inserted before
+//   mountToolbar(toolbar)              place the toolbar next to the input
 //   readPrefix()                       { label, decoration, prettified } | null
 //   writePrefix(markdown, prettified)  replace the current CC prefix
 //   clearPrefix()                      remove the current CC prefix
@@ -28,6 +28,9 @@ export const RICH_TEXT_SELECTORS = [
 // Anchor wrapping a prettified badge; the href is built by `createBadgeMarkdown`.
 const BADGE_ANCHOR_SELECTOR = `a[href*="${BADGE_LINK_HOST_PATH}"]`;
 
+const CONTENT_EDITOR_SELECTOR = '[data-testid="content-editor"]';
+const CONTENT_EDITOR_HEADER_SELECTOR = '[data-testid="content-editor-header"]';
+
 const RICH_TEXT_WRITE_TIMEOUT_MS = 5000;
 
 export function isRichTextElement(element) {
@@ -44,6 +47,11 @@ class TextareaHandle {
   constructor(textarea) {
     this.element = textarea;
     this.isRichText = false;
+  }
+
+  mountToolbar(toolbar) {
+    const anchor = this.getMountPoint();
+    anchor.parentNode?.insertBefore(toolbar, anchor);
   }
 
   getMountPoint() {
@@ -204,10 +212,24 @@ class RichTextHandle {
     this.pending = Promise.resolve();
   }
 
-  getMountPoint() {
-    // The ProseMirror node must not gain children of ours, so mount the toolbar
-    // above its wrapper (`[data-testid="content_editor_editablebox"]`).
-    return this.element.parentElement ?? this.element;
+  mountToolbar(toolbar) {
+    // GitLab draws the "Write a comment…" placeholder as an absolutely
+    // positioned sibling of the editable box, so its top edge is wherever the
+    // editor header ends. Anything inserted between the two is rendered
+    // underneath it; appending to the header keeps both readable.
+    const header = this.element
+      .closest(CONTENT_EDITOR_SELECTOR)
+      ?.querySelector(`:scope > ${CONTENT_EDITOR_HEADER_SELECTOR}`);
+
+    if (header) {
+      header.appendChild(toolbar);
+      return;
+    }
+
+    // The ProseMirror node must not gain children of ours, so fall back to
+    // mounting above its wrapper.
+    const anchor = this.element.parentElement ?? this.element;
+    anchor.parentNode?.insertBefore(toolbar, anchor);
   }
 
   // Describes the CC prefix currently rendered in the editor, if any.

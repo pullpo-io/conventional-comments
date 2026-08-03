@@ -196,8 +196,7 @@ function initializeToolbarForElement(element) {
 
   renderToolbar(toolbar, editor);
 
-  const mountPoint = editor.getMountPoint();
-  mountPoint.parentNode?.insertBefore(toolbar, mountPoint);
+  editor.mountToolbar(toolbar);
 
   element.classList.add(TOOLBAR_MARKER_CLASS);
 }
