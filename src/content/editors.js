@@ -170,6 +170,12 @@ function isArtifact(node) {
   );
 }
 
+// GitLab's markdown renderer strips the trailing space that keeps a badge off
+// the comment body, but a non-breaking space survives the round trip.
+function withSeparator(markdown) {
+  return `${markdown.replace(/\s+$/, "")}\u00a0`;
+}
+
 // First block-level child of the ProseMirror document, where a prefix would live.
 function getFirstBlock(root) {
   return root.firstElementChild;
@@ -328,13 +334,18 @@ class RichTextHandle {
       const previous = await this.selectPrefix();
 
       if (prettified) {
-        // GitLab replaces the selection itself when handling the paste.
-        this.pasteMarkdown(markdown);
-        await this.awaitBadge(previous?.anchor ?? null);
+        // GitLab anchors the rendered markdown to a loader widget placed where
+        // the paste began, and that widget never makes it into the document
+        // when the same command also has to clear a selection: the old badge
+        // is deleted and nothing ever replaces it. Clearing the prefix here
+        // keeps the paste on the path that does work, an empty selection.
+        if (previous) await this.deleteSelection();
+        this.pasteMarkdown(withSeparator(markdown));
+        await this.awaitBadge(this.findPrefix()?.anchor ?? null);
       } else {
         // Deleting through ProseMirror first keeps atoms (a badge image) from
         // being half-removed by the browser's own text insertion.
-        if (previous) this.pressBackspace();
+        if (previous) await this.deleteSelection();
         // Plain prefixes are literal text: typing them preserves the trailing
         // space that a markdown round-trip would otherwise strip.
         document.execCommand("insertText", false, markdown);
@@ -346,7 +357,7 @@ class RichTextHandle {
 
   clearPrefix() {
     return this.enqueue(async () => {
-      if (await this.selectPrefix()) this.pressBackspace();
+      if (await this.selectPrefix()) await this.deleteSelection();
       this.focus();
     });
   }
@@ -404,6 +415,11 @@ class RichTextHandle {
 
   // ProseMirror maps Backspace to `deleteSelection`, which removes atoms (the
   // badge image) far more reliably than mutating the contenteditable ourselves.
+  async deleteSelection() {
+    this.pressBackspace();
+    await nextTask();
+  }
+
   pressBackspace() {
     this.element.dispatchEvent(
       new KeyboardEvent("keydown", {
@@ -417,11 +433,9 @@ class RichTextHandle {
     );
   }
 
-  // Pasting markdown is resolved asynchronously by GitLab: the selection is only
-  // dropped a microtask later, and the badge itself lands after a round trip to
-  // the markdown renderer. Waiting for merely *a* badge would therefore match the
-  // one still on screen and move the caret out of the selection GitLab is about
-  // to delete, leaving the old badge behind — so wait for a different node.
+  // The badge only lands once GitLab's markdown renderer has answered, so wait
+  // for it. `previousAnchor` guards against matching a prefix we failed to
+  // remove, which would otherwise move the caret and corrupt the paste.
   async awaitBadge(previousAnchor) {
     const deadline = Date.now() + RICH_TEXT_WRITE_TIMEOUT_MS;
 
