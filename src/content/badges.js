@@ -1,54 +1,18 @@
 import Platform, { TOOLBAR_MARKER_CLASS } from "./platform.js";
+import { createEditorHandle } from "./editors.js";
+import {
+  LABELS,
+  DECORATIONS,
+  createBadgeMarkdown,
+  createPlainMarkdown,
+} from "./conventional-comments.js";
 
-// --- Components of a Conventional Comment ---
-
-export const LABELS = [
-  { label: "praise", desc: "Highlight something positive.", color: "#28A745" },
-  {
-    label: "nitpick",
-    desc: "Minor, non-blocking issues (style, naming...).",
-    color: "#F59E0B",
-  },
-  {
-    label: "suggestion",
-    desc: "Suggest specific improvements.",
-    color: "#3B82F6",
-  },
-  {
-    label: "todo",
-    desc: "Mark something that needs to be done.",
-    color: "#E879F9",
-  },
-  { label: "issue", desc: "Point out a blocking problem.", color: "#EF4444" },
-  { label: "question", desc: "Ask for clarification.", color: "#8B5CF6" },
-  { label: "thought", desc: "Share a reflection or idea.", color: "#6B7280" },
-  { label: "chore", desc: "Request a minor, non-code task.", color: "#F97316" },
-];
-
-export const DECORATIONS = [
-  {
-    label: "non-blocking",
-    desc: "Optional change, doesn't block merge.",
-    color: "#9CA3AF",
-  },
-  {
-    label: "blocking",
-    desc: "Must be addressed before merge.",
-    color: "#374151",
-  },
-  {
-    label: "if-minor",
-    desc: "Address if the effort is small.",
-    color: "#14B8A6",
-  },
-];
-
-// --- Selector for formatted Conventional Comments ---
-
-export const PLAIN_CC_REGEX =
-  /^\s*(?:(praise|nitpick|suggestion|issue|question|thought|chore|todo)\s*(?:\((non-blocking|blocking|if-minor)\))?:)\s*/;
-export const BADGE_CC_REGEX =
-  /^\s*\[\!\[(?:(praise|nitpick|suggestion|issue|question|thought|chore|todo)(?:\((non-blocking|blocking|if-minor)\))?)\]\(https?:\/\/img\.shields\.io\/badge\/.*?\)\]\(https?:\/\/pullpo\.io\/cc\?.*?\)\s*/;
+export {
+  LABELS,
+  DECORATIONS,
+  PLAIN_CC_REGEX,
+  BADGE_CC_REGEX,
+} from "./conventional-comments.js";
 
 // --- Toolbar selector Constants ---
 
@@ -60,114 +24,23 @@ const SETTINGS_BUTTON_ID_PREFIX = "cc-settings-button-";
 let toolbarCounter = 0;
 let settingsCounter = 0;
 
-// --- Badge Helpers ---
-
-function getBadgeColor(type) {
-  const label = LABELS.find((l) => l.label === type);
-  return label ? label.color.substring(1) : "6B7280";
-}
-
-function createBadgeMarkdown(type, decoration) {
-  const labelColor = getBadgeColor(type);
-  let label = type;
-  let message = decoration || "";
-  let decorationColor = "";
-
-  if (decoration) {
-    const decorObj = DECORATIONS.find((d) => d.label === decoration);
-    if (decorObj) {
-      decorationColor = decorObj.color.substring(1);
-    }
-  }
-
-  let badgeUrl;
-  const encode = (str) =>
-    encodeURIComponent(str.replace(/-/g, "--").replace(/_/g, "__"));
-
-  if (message) {
-    if (decorationColor) {
-      badgeUrl = `https://img.shields.io/badge/${encode(label)}-${encode(
-        message
-      )}-${decorationColor}?labelColor=${labelColor}`;
-    } else {
-      badgeUrl = `https://img.shields.io/badge/${encode(label)}-${encode(
-        message
-      )}-${labelColor}`;
-    }
-  } else {
-    badgeUrl = `https://img.shields.io/badge/${encode(label)}-${labelColor}`;
-  }
-
-  const badge = `![${type}${decoration ? `(${decoration})` : ""}](${badgeUrl})`;
-  const pullpoUrl = `https://pullpo.io/cc?l=${encodeURIComponent(type)}${
-    decoration ? `&d=${encodeURIComponent(decoration)}` : ""
-  }`;
-  return `[${badge}](${pullpoUrl}) `;
-}
-
-// --- LocalStorage Helpers ---
-
 // --- Core Function: Update Comment Prefix (Handles Text or Badge) ---
 
-function updateCommentPrefix(toolbar, textarea) {
-  const currentValue = textarea.value;
-  const originalSelectionStart = textarea.selectionStart;
-  const originalSelectionEnd = textarea.selectionEnd;
+function updateCommentPrefix(toolbar, editor) {
+  const type = toolbar.dataset.selectedType;
+  const decoration = toolbar.dataset.selectedDecoration;
+  const prettified = toolbar.dataset.prettified === "true";
 
-  const newType = toolbar.dataset.selectedType;
-  const newDecoration = toolbar.dataset.selectedDecoration;
-  const newPrettified = toolbar.dataset.prettified === "true";
+  const markdown = prettified
+    ? createBadgeMarkdown(type, decoration)
+    : createPlainMarkdown(type, decoration);
 
-  const match =
-    currentValue.match(PLAIN_CC_REGEX) ?? currentValue.match(BADGE_CC_REGEX);
-
-  let initialPrefix = "";
-  let subject = currentValue;
-
-  if (match) {
-    initialPrefix = match[0];
-    subject = currentValue.substring(initialPrefix.length);
-  }
-
-  let newPrefix, newValue;
-  if (newPrettified) {
-    newPrefix = createBadgeMarkdown(newType, newDecoration) + "\n";
-    newValue = newPrefix + subject.trimStart();
-  } else {
-    newPrefix = newType;
-    if (newDecoration) {
-      newPrefix += `(${newDecoration})`;
-    }
-    newPrefix += ": ";
-    newValue = newPrefix + subject;
-  }
-
-  let newSelectionStart = 0;
-  let newSelectionEnd = 0;
-
-  if (newType) {
-    newSelectionStart =
-      originalSelectionStart - initialPrefix.length + newPrefix.length;
-    newSelectionEnd =
-      originalSelectionEnd - initialPrefix.length + newPrefix.length;
-  } else {
-    newSelectionStart = originalSelectionStart - initialPrefix.length;
-    newSelectionEnd = originalSelectionEnd - initialPrefix.length;
-  }
-
-  textarea.value = newValue;
-  textarea.selectionStart = Math.max(0, newSelectionStart);
-  textarea.selectionEnd = Math.max(0, newSelectionEnd);
-
-  textarea.dispatchEvent(new Event("input", { bubbles: true }));
-  textarea.dispatchEvent(new Event("change", { bubbles: true }));
-
-  textarea.focus();
+  editor.writePrefix(markdown, prettified);
 }
 
 // --- Settings UI ---
 
-function createSettingsButton(toolbar, textarea) {
+function createSettingsButton(toolbar, editor) {
   const button = document.createElement("button");
   button.id = `${SETTINGS_BUTTON_ID_PREFIX}${settingsCounter}`;
   button.title = "Toggle prettify";
@@ -195,7 +68,7 @@ function createSettingsButton(toolbar, textarea) {
     button.classList.toggle("cc-settings-button-active", newState);
 
     if (toolbar.dataset.selectedType) {
-      updateCommentPrefix(toolbar, textarea);
+      updateCommentPrefix(toolbar, editor);
     }
   });
 
@@ -205,7 +78,7 @@ function createSettingsButton(toolbar, textarea) {
 
 // --- Render Toolbar ---
 
-function renderToolbar(toolbar, textarea) {
+function renderToolbar(toolbar, editor) {
   const state = toolbar.dataset.state || "initial";
   const selectedType = toolbar.dataset.selectedType || null;
   const selectedDecoration = toolbar.dataset.selectedDecoration || null;
@@ -232,20 +105,16 @@ function renderToolbar(toolbar, textarea) {
           toolbar.dataset.selectedDecoration = "";
           toolbar.dataset.state = "initial";
 
-          textarea.value = textarea.value
-            .replace(PLAIN_CC_REGEX, "")
-            .replace(BADGE_CC_REGEX, "");
-          textarea.dispatchEvent(new Event("input", { bubbles: true }));
-          textarea.dispatchEvent(new Event("change", { bubbles: true }));
+          editor.clearPrefix();
         } else {
           toolbar.dataset.selectedType = item.label;
           toolbar.dataset.selectedDecoration = "";
           toolbar.dataset.state = "typeSelected";
 
-          updateCommentPrefix(toolbar, textarea);
+          updateCommentPrefix(toolbar, editor);
         }
 
-        renderToolbar(toolbar, textarea);
+        renderToolbar(toolbar, editor);
       });
       toolbar.appendChild(button);
     });
@@ -258,7 +127,7 @@ function renderToolbar(toolbar, textarea) {
 
     typeLabel.addEventListener("click", () => {
       toolbar.dataset.state = "changeType";
-      renderToolbar(toolbar, textarea);
+      renderToolbar(toolbar, editor);
     });
     toolbar.appendChild(typeLabel);
 
@@ -283,40 +152,41 @@ function renderToolbar(toolbar, textarea) {
 
         if (currentSelectedDecoration === decItem.label) {
           toolbar.dataset.selectedDecoration = "";
-          updateCommentPrefix(toolbar, textarea);
         } else {
           toolbar.dataset.selectedDecoration = decItem.label;
-          updateCommentPrefix(toolbar, textarea);
         }
+        updateCommentPrefix(toolbar, editor);
 
-        renderToolbar(toolbar, textarea);
+        renderToolbar(toolbar, editor);
       });
       toolbar.appendChild(button);
     });
   }
 
-  const settingsButton = createSettingsButton(toolbar, textarea);
+  const settingsButton = createSettingsButton(toolbar, editor);
   const settingsButtonWrapper = document.createElement("div");
   settingsButtonWrapper.classList.add("cc-toolbar-settings-item");
   settingsButtonWrapper.appendChild(settingsButton);
   toolbar.appendChild(settingsButtonWrapper);
 }
 
-// --- Initialize Toolbar for a Textarea ---
+// --- Initialize Toolbar for a comment input ---
 
-function initializeToolbarForTextarea(textarea) {
-  const textareaId =
-    textarea.id ||
-    textarea.name ||
+function initializeToolbarForElement(element) {
+  const editor = createEditorHandle(element);
+
+  const elementId =
+    element.id ||
+    element.name ||
     `cc-textarea-${Math.random().toString(36).substring(2, 9)}`;
-  if (!textarea.id) textarea.id = textareaId;
+  if (!element.id) element.id = elementId;
 
   const toolbar = document.createElement("div");
   toolbar.id = `${TOOLBAR_ID_PREFIX}${toolbarCounter++}`;
-  toolbar.dataset.textareaId = textarea.id;
+  toolbar.dataset.textareaId = element.id;
   toolbar.classList.add("cc-toolbar");
 
-  const initialState = extractInitialTextareaState(textarea);
+  const initialState = extractInitialState(editor);
   toolbar.dataset.state = initialState.state;
   toolbar.dataset.selectedType = initialState.label;
   toolbar.dataset.selectedDecoration = initialState.decorator;
@@ -324,51 +194,24 @@ function initializeToolbarForTextarea(textarea) {
 
   toolbar.style.display = "flex";
 
-  renderToolbar(toolbar, textarea);
+  renderToolbar(toolbar, editor);
 
-  const hasGithubMarkdownClass = Array.from(textarea.classList).some((name) =>
-    name.startsWith("prc-Textarea-TextArea-")
-  );
-  const githubWrapper = textarea.closest(
-    '[class*="MarkdownInput-module__textArea"], [class*="TextInputBaseWrapper"]'
-  );
+  editor.mountToolbar(toolbar);
 
-  if (hasGithubMarkdownClass || githubWrapper) {
-    // GitHub's new editor wraps the textarea in a flex container; insert above it.
-    if (githubWrapper && githubWrapper.parentNode) {
-      githubWrapper.parentNode.insertBefore(toolbar, githubWrapper);
-    } else {
-      textarea.parentNode?.insertBefore(toolbar, textarea);
-    }
-  } else {
-    textarea.parentNode?.insertBefore(toolbar, textarea);
-  }
-
-  textarea.classList.add(TOOLBAR_MARKER_CLASS);
+  element.classList.add(TOOLBAR_MARKER_CLASS);
 }
 
-// --- Detect initial textarea state ---
+// --- Detect initial comment input state ---
 
-function extractInitialTextareaState(textarea) {
-  const initialValue = textarea.value;
+function extractInitialState(editor) {
+  const prefix = editor.readPrefix();
 
-  const plainMatch = initialValue.match(PLAIN_CC_REGEX);
-  if (plainMatch) {
+  if (prefix) {
     return {
       state: "typeSelected",
-      label: plainMatch[1],
-      decorator: plainMatch[2],
-      prettified: "false",
-    };
-  }
-
-  const badgeMatch = initialValue.match(BADGE_CC_REGEX);
-  if (badgeMatch) {
-    return {
-      state: "typeSelected",
-      label: badgeMatch[1],
-      decorator: badgeMatch[2],
-      prettified: "true",
+      label: prefix.label ?? "",
+      decorator: prefix.decoration ?? "",
+      prettified: String(prefix.prettified),
     };
   }
 
@@ -382,30 +225,37 @@ function extractInitialTextareaState(textarea) {
 
 // --- Public: process comment areas ---
 
+function prepareElement(element, placeholder) {
+  // Rich text editors render their own placeholder and have no `placeholder`
+  // attribute, so only textareas are touched here.
+  if (element.tagName === "TEXTAREA") {
+    element.placeholder = placeholder;
+  }
+
+  const commentBoxContainer = element.closest(".CommentBox-container");
+  if (commentBoxContainer) {
+    const placeholderElement = commentBoxContainer.querySelector(
+      ".CommentBox-placeholder"
+    );
+    if (placeholderElement) {
+      placeholderElement.remove();
+    }
+  }
+
+  if (!element.id) {
+    element.id = `cc-textarea-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 7)}`;
+  }
+}
+
 export function processCommentAreas() {
   const query = Platform.strategy.getUnprocessedTextareaQuery();
-  const commentTextareas = document.querySelectorAll(query);
+  const commentAreas = document.querySelectorAll(query);
 
-  commentTextareas.forEach((textarea) => {
-    textarea.placeholder = "Add your comment here...";
-
-    const commentBoxContainer = textarea.closest(".CommentBox-container");
-    if (commentBoxContainer) {
-      const placeholderElement = commentBoxContainer.querySelector(
-        ".CommentBox-placeholder"
-      );
-      if (placeholderElement) {
-        placeholderElement.remove();
-      }
-    }
-
-    if (!textarea.id) {
-      textarea.id = `cc-textarea-${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(2, 7)}`;
-    }
-
-    initializeToolbarForTextarea(textarea);
+  commentAreas.forEach((element) => {
+    prepareElement(element, "Add your comment here...");
+    initializeToolbarForElement(element);
   });
 }
 
@@ -418,29 +268,13 @@ export function checkAndInitializeAddedTextareas(node) {
     node.matches(query) &&
     !node.classList.contains(TOOLBAR_MARKER_CLASS)
   ) {
-    node.placeholder = "";
-    initializeToolbarForTextarea(node);
+    prepareElement(node, "");
+    initializeToolbarForElement(node);
   } else if (node.querySelectorAll) {
-    const textareas = node.querySelectorAll(query);
-    textareas.forEach((textarea) => {
-      textarea.placeholder = "Add your comment here...";
-      const commentBoxContainer = textarea.closest(".CommentBox-container");
-      if (commentBoxContainer) {
-        const placeholderElement = commentBoxContainer.querySelector(
-          ".CommentBox-placeholder"
-        );
-        if (placeholderElement) {
-          placeholderElement.remove();
-        }
-      }
-
-      if (!textarea.id) {
-        textarea.id = `cc-textarea-${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 7)}`;
-      }
-
-      initializeToolbarForTextarea(textarea);
+    const elements = node.querySelectorAll(query);
+    elements.forEach((element) => {
+      prepareElement(element, "Add your comment here...");
+      initializeToolbarForElement(element);
     });
   }
 }
